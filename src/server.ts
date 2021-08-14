@@ -4,6 +4,8 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 import fetch from 'cross-fetch';
 import { RESIZE_BEZIER } from 'jimp/*';
 
+import { Request, Response} from 'express';
+
 (async () => {
 
   // Init the Express application
@@ -17,16 +19,20 @@ import { RESIZE_BEZIER } from 'jimp/*';
 
 
 
-  app.get('/filteredimage', async (req, res) =>{
-    const image_url = req.query.image_url
+  app.get('/filteredimage', async (req: Request, res: Response) =>{
+    const image_url: string = req.query.image_url
+
+    const validUrl: boolean = (await fetch(image_url)).statusText == 'OK' ? true : false
 
     if(image_url && validUrl){
-      const image = await filterImageFromURL(image_url)
+      const image: string = await filterImageFromURL(image_url)
       res.status(200).sendFile(image)
       res.on('finish', () => deleteLocalFiles([image]))
     } else {
       res.status(400).send('Please check if the image URL exists.')
     }
+
+
     
   });
 
@@ -62,13 +68,3 @@ import { RESIZE_BEZIER } from 'jimp/*';
   } );
 })();
 
-async function validUrl(url: string){
-  try{
-    await fetch(url)
-  }
-  catch(err){
-    console.log('false')
-    return false
-  }
-  return true
-}
